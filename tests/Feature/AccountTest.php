@@ -20,6 +20,7 @@ class AccountTest extends TestCase
     /*
      * Signup tests
      */
+
     public function testGuestCanSignup(): void
     {
         $response = $this->postJson('/api/signup', [
@@ -31,7 +32,7 @@ class AccountTest extends TestCase
         $response->assertStatus(201);
     }
 
-    public function testGuestCanotSignupWithAlreadyUsedNameOrEmail(): void
+    public function testGuestCannotSignupWithAlreadyUsedNameOrEmail(): void
     {
         $this->createUser();
 
@@ -52,10 +53,20 @@ class AccountTest extends TestCase
         $response->assertStatus(400);
     }
 
+    public function testGuestCannotSignupWithInvalidParameters(): void
+    {
+        $response = $this->postJson('/api/signup', [
+            'name' => 'invalid name',
+            'email' => 'invalid mail',
+            'e' => 'invalid parameter'
+        ]);
+
+        $response->assertStatus(422);
+    }
+
     /*
      * Login tests
      */
-
 
     public function testUserCanLoginWithUsername(): void
     {
@@ -96,8 +107,8 @@ class AccountTest extends TestCase
     public function testCannotLoginWithInvalidParameters(): void
     {
         $response = $this->postJson('/api/login', [
-            'email' => 'test@mail.com',
-            'invalid_parameter' => 'invalid'
+            'email' => 'invalid mail',
+            'e' => 'invalid parameter'
         ]);
 
         $response->assertStatus(422);
@@ -130,7 +141,7 @@ class AccountTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function testUserCannotResetPasswordWithIncorrectInformations(): void
+    public function testUserCannotResetPasswordWithIncorrectInformation(): void
     {
         // TODO whole reset password feature
         $response = $this->postJson('/api/forgot-password', [
@@ -157,14 +168,14 @@ class AccountTest extends TestCase
         $this->createUser();
 
         $response = $this->postJson('/api/forgot-password', [
-            'emaile' => 'test@mail.com'
+            'e' => 'test@mail.com'
         ]);
 
         $response->assertStatus(422);
 
         $response = $this->postJson("/api/reset-password", [
-            'emaile' => 'test@mail.com',
-            'passworde' => 'newpass'
+            'e' => 'test@mail.com',
+            'password' => 'pass'
         ]);
 
         $response->assertStatus(422);
