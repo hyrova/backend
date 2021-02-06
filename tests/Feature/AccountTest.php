@@ -77,7 +77,10 @@ class AccountTest extends TestCase
             'password' => 'Test'
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'token',
+            ]);
     }
 
     public function testUserCanLoginWithEmail(): void
@@ -89,7 +92,10 @@ class AccountTest extends TestCase
             'password' => 'Test'
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'token',
+            ]);
     }
 
     public function testUserCannotLoginWithIncorrectCredentials(): void
@@ -179,5 +185,61 @@ class AccountTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    /*
+     * Profile tests
+     */
+
+    public function testUserCanGetHisProfile(): void
+    {
+        $user = $this->createUser();
+
+        $response = $this->actingAs($user)
+            ->getJson('/api/user/1');
+
+        $response->assertStatus(200);
+    }
+
+    public function testUserCannotGetOthersProfile(): void
+    {
+        $this->createUser();
+        $user = $this->createUser();
+
+        $response = $this->actingAs($user)
+            ->getJson('/api/user/1');
+
+        $response->assertStatus(401);
+    }
+
+    public function testUserCanUpdateHisProfile(): void
+    {
+        $user = $this->createUser();
+
+        $response = $this->actingAs($user)
+            ->putJson('/api/user/1', [
+                'email' => 'newmail@mail.com'
+            ]);
+
+        $user->refresh();
+
+        self::assertEquals('newmail@mail.com', $user->email);
+
+        $response->assertStatus(200);
+    }
+
+    public function testUserCannotUpdateOthersProfile(): void
+    {
+        $user1 =$this->createUser();
+        $user2 = $this->createUser();
+
+        $response = $this->actingAs($user2)
+            ->putJson('/api/user/1', [
+                'email' => 'newmail@mail.com'
+            ]);
+
+        self::assertNotEquals('newmail@mail.com', $user1->email);
+
+        $response->assertStatus(401);
     }
 }
