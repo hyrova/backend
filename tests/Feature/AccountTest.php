@@ -111,7 +111,7 @@ class AccountTest extends TestCase
         $response->assertStatus(400);
     }
 
-    public function testCannotLoginWithInvalidParameters(): void
+    public function testUserCannotLoginWithInvalidParameters(): void
     {
         $response = $this->postJson('/api/login', [
             'email' => 'invalid mail',
@@ -119,6 +119,23 @@ class AccountTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    public function testUserCannotLoginIfBanned(): void
+    {
+        User::factory()->make([
+            'name' => 'Test',
+            'password' => 'Test',
+            'email' => 'test@mail.com',
+            'deleted_at' => now()
+        ]);
+
+        $response = $this->postJson('/api/login', [
+            'email' => 'test@mail.com',
+            'password' => 'Test'
+        ]);
+
+        $response->assertStatus(401);
     }
 
     /*
@@ -229,7 +246,7 @@ class AccountTest extends TestCase
 
     public function testUserCannotUpdateOthersProfile(): void
     {
-        $user1 =$this->createUser();
+        $user1 = $this->createUser();
         $user2 = $this->createUser();
 
         $response = $this->actingAs($user2)
@@ -240,5 +257,33 @@ class AccountTest extends TestCase
         self::assertNotEquals('newmail@mail.com', $user1->email);
 
         $response->assertStatus(401);
+    }
+
+    /*
+     * Newsletter test
+     */
+
+    public function testUserCanSubscribeToNewsletter(): void
+    {
+        $user = $this->createUser();
+
+        $response = $this->actingAs($user)
+            ->putJson('/api/newsletter', [
+                'subscribe' => true
+            ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function testUserCanUnsubscribeToNewsletter(): void
+    {
+        $user = $this->createUser();
+
+        $response = $this->actingAs($user)
+            ->putJson('/api/newsletter', [
+                'subscribe' => false
+            ]);
+
+        $response->assertStatus(200);
     }
 }
