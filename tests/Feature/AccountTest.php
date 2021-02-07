@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class AccountTest extends TestCase
@@ -124,10 +125,9 @@ class AccountTest extends TestCase
      * Reset password tests
      */
 
-    public function testUserCanResetPassword(): void
+    public function testUserCanResetPassword()
     {
-        // TODO whole reset password feature
-        $this->createUser();
+        $user = $this->createUser();
 
         $response = $this->postJson('/api/forgot-password', [
             'email' => 'test@mail.com'
@@ -135,8 +135,7 @@ class AccountTest extends TestCase
 
         $response->assertStatus(200);
 
-        // TODO generate valid token
-        $token = '123';
+        $token = Password::createToken($user);
 
         $response = $this->postJson("/api/reset-password", [
             'token' => $token,
