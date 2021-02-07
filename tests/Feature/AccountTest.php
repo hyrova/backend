@@ -142,7 +142,7 @@ class AccountTest extends TestCase
      * Reset password tests
      */
 
-    public function testUserCanResetPassword()
+    public function testUserCanResetPassword(): void
     {
         $user = $this->createUser();
 
@@ -165,7 +165,6 @@ class AccountTest extends TestCase
 
     public function testUserCannotResetPasswordWithIncorrectInformation(): void
     {
-        // TODO whole reset password feature
         $response = $this->postJson('/api/forgot-password', [
             'email' => 'test@mail.com'
         ]);
@@ -186,7 +185,6 @@ class AccountTest extends TestCase
 
     public function testUserCannotResetPasswordWithInvalidParameters(): void
     {
-        // TODO whole reset password feature
         $this->createUser();
 
         $response = $this->postJson('/api/forgot-password', [
