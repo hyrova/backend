@@ -9,12 +9,14 @@ use Tests\TestCase;
 
 class AccountTest extends TestCase
 {
+    use RefreshDatabase;
+
     private function createUser(): User
     {
-        return User::factory()->make([
-            'name' => 'Test',
-            'password' => 'Test',
+        return User::factory()->create([
+            'name' => 'username',
             'email' => 'test@mail.com',
+            'password' => 'password',
         ]);
     }
 
@@ -25,9 +27,10 @@ class AccountTest extends TestCase
     public function testGuestCanSignup(): void
     {
         $response = $this->postJson('/api/signup', [
-            'name' => 'Test',
+            'name' => 'username',
             'email' => 'test@mail.com',
-            'password' => 'Test'
+            'password' => 'password',
+            'device' => 'device'
         ]);
 
         $response->assertStatus(201);
@@ -38,20 +41,22 @@ class AccountTest extends TestCase
         $this->createUser();
 
         $response = $this->postJson('/api/signup', [
-            'name' => 'Other',
+            'name' => 'other_name',
             'email' => 'test@mail.com',
-            'password' => 'Test'
+            'password' => 'password',
+            'device' => 'device'
         ]);
 
-        $response->assertStatus(400);
+        $response->assertStatus(422);
 
         $response = $this->postJson('/api/signup', [
-            'name' => 'Test',
+            'name' => 'username',
             'email' => 'other@mail.com',
-            'password' => 'Test'
+            'password' => 'password',
+            'device' => 'device'
         ]);
 
-        $response->assertStatus(400);
+        $response->assertStatus(422);
     }
 
     public function testGuestCannotSignupWithInvalidParameters(): void
@@ -59,7 +64,8 @@ class AccountTest extends TestCase
         $response = $this->postJson('/api/signup', [
             'name' => 'invalid name',
             'email' => 'invalid mail',
-            'e' => 'invalid parameter'
+            'e' => 'invalid parameter',
+            'device' => 'device'
         ]);
 
         $response->assertStatus(422);
@@ -74,14 +80,12 @@ class AccountTest extends TestCase
         $this->createUser();
 
         $response = $this->postJson('/api/login', [
-            'name' => 'Test',
-            'password' => 'Test'
+            'login' => 'username',
+            'password' => 'password',
+            'device' => 'device'
         ]);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'token',
-            ]);
+        $response->assertStatus(200);
     }
 
     public function testUserCanLoginWithEmail(): void
@@ -89,14 +93,12 @@ class AccountTest extends TestCase
         $this->createUser();
 
         $response = $this->postJson('/api/login', [
-            'email' => 'test@mail.com',
-            'password' => 'Test'
+            'login' => 'test@mail.com',
+            'password' => 'password',
+            'device' => 'device'
         ]);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'token',
-            ]);
+        $response->assertStatus(200);
     }
 
     public function testUserCannotLoginWithIncorrectCredentials(): void
@@ -104,8 +106,9 @@ class AccountTest extends TestCase
         $this->createUser();
 
         $response = $this->postJson('/api/login', [
-            'email' => 'test@mail.com',
-            'password' => 'invalid'
+            'login' => 'test@mail.com',
+            'password' => 'invalid',
+            'device' => 'device'
         ]);
 
         $response->assertStatus(400);
@@ -114,8 +117,9 @@ class AccountTest extends TestCase
     public function testUserCannotLoginWithInvalidParameters(): void
     {
         $response = $this->postJson('/api/login', [
-            'email' => 'invalid mail',
-            'e' => 'invalid parameter'
+            'login' => 'invalid mail',
+            'e' => 'invalid parameter',
+            'device' => 'device'
         ]);
 
         $response->assertStatus(422);
@@ -124,18 +128,19 @@ class AccountTest extends TestCase
     public function testUserCannotLoginIfBanned(): void
     {
         User::factory()->make([
-            'name' => 'Test',
-            'password' => 'Test',
+            'name' => 'username',
+            'password' => 'password',
             'email' => 'test@mail.com',
             'deleted_at' => now()
         ]);
 
         $response = $this->postJson('/api/login', [
-            'email' => 'test@mail.com',
-            'password' => 'Test'
+            'login' => 'test@mail.com',
+            'password' => 'password',
+            'device' => 'device'
         ]);
 
-        $response->assertStatus(401);
+        $response->assertStatus(400);
     }
 
     /*
