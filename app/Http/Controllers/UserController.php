@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Requests\UpdateNewsletterSubscriptionRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use Auth;
 use Illuminate\Http\JsonResponse;
@@ -25,6 +26,17 @@ class UserController extends Controller
         $user = Auth::user();
 
         $user->update($request->only('email'));
+
+        return $this->success($user);
+    }
+
+    public function updateNewsletterSubscription(UpdateNewsletterSubscriptionRequest $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        $user->update([
+            'newsletter' => $request->get('subscribe')
+        ]);
 
         return $this->success($user);
     }
