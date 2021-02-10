@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
@@ -11,12 +14,16 @@ class AccountTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const USER_ORIGINAL_USERNAME = 'username';
+    private const USER_ORIGINAL_EMAIL = 'test@mail.com';
+    private const USER_ORIGINAL_PASSWORD = 'password';
+
     private function createUser(): User
     {
         return User::factory()->create([
-            'name' => 'username',
-            'email' => 'test@mail.com',
-            'password' => 'password',
+            'name' => self::USER_ORIGINAL_USERNAME,
+            'email' => self::USER_ORIGINAL_EMAIL,
+            'password' => self::USER_ORIGINAL_PASSWORD,
         ]);
     }
 
@@ -27,9 +34,9 @@ class AccountTest extends TestCase
     public function testGuestCanSignup(): void
     {
         $response = $this->postJson('/api/signup', [
-            'name' => 'username',
-            'email' => 'test@mail.com',
-            'password' => 'password',
+            'name' => self::USER_ORIGINAL_USERNAME,
+            'email' => self::USER_ORIGINAL_EMAIL,
+            'password' => self::USER_ORIGINAL_PASSWORD,
             'device' => 'device'
         ]);
 
@@ -42,17 +49,17 @@ class AccountTest extends TestCase
 
         $response = $this->postJson('/api/signup', [
             'name' => 'other_name',
-            'email' => 'test@mail.com',
-            'password' => 'password',
+            'email' => self::USER_ORIGINAL_EMAIL,
+            'password' => self::USER_ORIGINAL_PASSWORD,
             'device' => 'device'
         ]);
 
         $response->assertStatus(422);
 
         $response = $this->postJson('/api/signup', [
-            'name' => 'username',
+            'name' => self::USER_ORIGINAL_USERNAME,
             'email' => 'other@mail.com',
-            'password' => 'password',
+            'password' => self::USER_ORIGINAL_PASSWORD,
             'device' => 'device'
         ]);
 
@@ -80,8 +87,8 @@ class AccountTest extends TestCase
         $this->createUser();
 
         $response = $this->postJson('/api/login', [
-            'login' => 'username',
-            'password' => 'password',
+            'login' => self::USER_ORIGINAL_USERNAME,
+            'password' => self::USER_ORIGINAL_PASSWORD,
             'device' => 'device'
         ]);
 
@@ -93,8 +100,8 @@ class AccountTest extends TestCase
         $this->createUser();
 
         $response = $this->postJson('/api/login', [
-            'login' => 'test@mail.com',
-            'password' => 'password',
+            'login' => self::USER_ORIGINAL_EMAIL,
+            'password' => self::USER_ORIGINAL_PASSWORD,
             'device' => 'device'
         ]);
 
@@ -106,7 +113,7 @@ class AccountTest extends TestCase
         $this->createUser();
 
         $response = $this->postJson('/api/login', [
-            'login' => 'test@mail.com',
+            'login' => self::USER_ORIGINAL_EMAIL,
             'password' => 'invalid',
             'device' => 'device'
         ]);
@@ -128,15 +135,15 @@ class AccountTest extends TestCase
     public function testUserCannotLoginIfBanned(): void
     {
         User::factory()->make([
-            'name' => 'username',
-            'password' => 'password',
-            'email' => 'test@mail.com',
+            'name' => self::USER_ORIGINAL_USERNAME,
+            'email' => self::USER_ORIGINAL_EMAIL,
+            'password' => self::USER_ORIGINAL_PASSWORD,
             'deleted_at' => now()
         ]);
 
         $response = $this->postJson('/api/login', [
-            'login' => 'test@mail.com',
-            'password' => 'password',
+            'login' => self::USER_ORIGINAL_EMAIL,
+            'password' => self::USER_ORIGINAL_PASSWORD,
             'device' => 'device'
         ]);
 
@@ -152,58 +159,80 @@ class AccountTest extends TestCase
         $user = $this->createUser();
 
         $response = $this->postJson('/api/forgot-password', [
-            'email' => 'test@mail.com'
+            'email' => self::USER_ORIGINAL_EMAIL
         ]);
 
         $response->assertStatus(200);
 
+        Notification::assertSentTo($user, ResetPassword::class);
+
         $token = Password::createToken($user);
+        $new_password = 'newpassword';
 
         $response = $this->postJson("/api/reset-password", [
             'token' => $token,
-            'email' => 'test@mail.com',
-            'password' => 'newpass'
+            'email' => self::USER_ORIGINAL_EMAIL,
+            'password' => $new_password
         ]);
 
         $response->assertStatus(200);
+
+        $user->refresh();
+
+        self::assertFalse(Hash::check(self::USER_ORIGINAL_PASSWORD, $user->password));
+
+        self::assertTrue(Hash::check($new_password, $user->password));
     }
 
     public function testUserCannotResetPasswordWithIncorrectInformation(): void
     {
+        $user = $this->createUser();
+
         $response = $this->postJson('/api/forgot-password', [
-            'email' => 'test@mail.com'
+            'email' => 'incorrect@mail.com'
         ]);
 
         $response->assertStatus(400);
 
         $token = '123';
+        $new_password = 'newpassword';
 
         $response = $this->postJson("/api/reset-password", [
             'token' => $token,
-            'email' => 'test@mail.com',
-            'password' => 'newpass'
+            'email' => self::USER_ORIGINAL_EMAIL,
+            'password' => $new_password
         ]);
 
         $response->assertStatus(400);
+
+        self::assertFalse(Hash::check($new_password, $user->password));
+
+        self::assertTrue(Hash::check(self::USER_ORIGINAL_PASSWORD, $user->password));
     }
 
 
     public function testUserCannotResetPasswordWithInvalidParameters(): void
     {
-        $this->createUser();
+        $user = $this->createUser();
 
         $response = $this->postJson('/api/forgot-password', [
-            'e' => 'test@mail.com'
+            'e' => self::USER_ORIGINAL_EMAIL
         ]);
 
         $response->assertStatus(422);
+
+        $new_password = 'pass';
 
         $response = $this->postJson("/api/reset-password", [
-            'e' => 'test@mail.com',
-            'password' => 'pass'
+            'e' => self::USER_ORIGINAL_EMAIL,
+            'password' => $new_password
         ]);
 
         $response->assertStatus(422);
+
+        self::assertFalse(Hash::check($new_password, $user->password));
+
+        self::assertTrue(Hash::check(self::USER_ORIGINAL_PASSWORD, $user->password));
     }
 
     /*
@@ -215,20 +244,9 @@ class AccountTest extends TestCase
         $user = $this->createUser();
 
         $response = $this->actingAs($user)
-            ->getJson('/api/user/1');
+            ->getJson('/api/me');
 
         $response->assertStatus(200);
-    }
-
-    public function testUserCannotGetOthersProfile(): void
-    {
-        $this->createUser();
-        $user = $this->createUser();
-
-        $response = $this->actingAs($user)
-            ->getJson('/api/user/1');
-
-        $response->assertStatus(401);
     }
 
     public function testUserCanUpdateHisProfile(): void
@@ -236,30 +254,15 @@ class AccountTest extends TestCase
         $user = $this->createUser();
 
         $response = $this->actingAs($user)
-            ->putJson('/api/user/1', [
+            ->putJson('/api/me', [
                 'email' => 'newmail@mail.com'
             ]);
 
         $user->refresh();
 
-        self::assertEquals('newmail@mail.com', $user->email);
-
         $response->assertStatus(200);
-    }
 
-    public function testUserCannotUpdateOthersProfile(): void
-    {
-        $user1 = $this->createUser();
-        $user2 = $this->createUser();
-
-        $response = $this->actingAs($user2)
-            ->putJson('/api/user/1', [
-                'email' => 'newmail@mail.com'
-            ]);
-
-        self::assertNotEquals('newmail@mail.com', $user1->email);
-
-        $response->assertStatus(401);
+        self::assertEquals('newmail@mail.com', $user->email);
     }
 
     /*

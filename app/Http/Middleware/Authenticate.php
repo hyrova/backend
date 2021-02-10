@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
+use Illuminate\Http\JsonResponse;
 
 class Authenticate extends Middleware
 {
@@ -18,6 +19,6 @@ class Authenticate extends Middleware
             return route('login');
         }
 
-        return null;
+        return new JsonResponse('Not connected', 400);
     }
 }
