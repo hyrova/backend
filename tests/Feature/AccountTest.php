@@ -282,7 +282,7 @@ class AccountTest extends TestCase
 
         $user->refresh();
 
-        self::assertSame($user->newsletter, 1);
+        self::assertTrue($user->newsletter);
     }
 
     public function testUserCanUnsubscribeToNewsletter(): void
@@ -298,6 +298,6 @@ class AccountTest extends TestCase
 
         $user->refresh();
 
-        self::assertSame($user->newsletter, 0);
+        self::assertFalse($user->newsletter);
     }
 }
