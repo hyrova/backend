@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class RoleTest extends TestCase
 {
-    public function testUserIsNotSuperAdmin()
+    public function testUserIsNotSuperAdmin(): void
     {
         $user = User::factory()
             ->create();
@@ -16,7 +16,7 @@ class RoleTest extends TestCase
         self::assertFalse($user->isSuperAdmin());
     }
 
-    public function testUserIsSuperAdmin()
+    public function testUserIsSuperAdmin(): void
     {
         $user = User::factory()
             ->has(
