@@ -6,6 +6,7 @@ use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\UpdateNewsletterSubscriptionRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Resources\UserResource;
 use Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,31 +15,33 @@ use Illuminate\Support\Facades\Password;
 
 class UserController extends Controller
 {
-    public function getProfile(): JsonResponse
+    public function getProfile(Request $request): UserResource
     {
-        $user = Auth::user();
+        $user = $request->user();
 
-        return $this->success($user);
+        return new UserResource($user);
     }
 
-    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    public function updateProfile(UpdateProfileRequest $request): UserResource
     {
-        $user = Auth::user();
+        $user = $request->user();
 
+        // If more data needs to be update, move that in a service
         $user->update($request->only('email'));
+        $user->refresh();
 
-        return $this->success($user);
+        return new UserResource($user);
     }
 
-    public function updateNewsletterSubscription(UpdateNewsletterSubscriptionRequest $request): JsonResponse
+    public function updateNewsletterSubscription(UpdateNewsletterSubscriptionRequest $request): UserResource
     {
-        $user = Auth::user();
+        $user = $request->user();
 
         $user->update([
             'newsletter' => $request->get('subscribe')
         ]);
 
-        return $this->success($user);
+        return new UserResource($user);
     }
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
@@ -59,7 +62,7 @@ class UserController extends Controller
         $status = Password::reset(
             $request->only('email', 'password', 'token'),
             function ($user, $password) {
-                $user->forceFill([
+                $user->fill([
                     'password' => $password
                 ])->save();
             }

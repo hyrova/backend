@@ -21,18 +21,17 @@ class AuthService
         return Auth::attempt(['name' => $login, 'password' => $password]);
     }
 
-    public function loginSanctum(LoginRequest $loginRequest): ?string
+    public function loginSanctum(LoginRequest $request): ?string
     {
-        $login = $loginRequest->get('login');
-        $password = $loginRequest->get('password');
-        $device = $loginRequest->get('device');
+        $login = $request->get('login');
+        $password = $request->get('password');
+        $device = $request->get('device');
 
         if (!$this->attemptCredentials($login, $password)) {
             return null;
         }
 
-        /** @var User $user */
-        $user = Auth::user();
+        $user = $request->user();
 
         if (!$user) {
             return null;
@@ -50,15 +49,11 @@ class AuthService
         return $token->plainTextToken;
     }
 
-    public function registerSanctum(RegisterRequest $registerRequest): ?string
+    public function registerSanctum(RegisterRequest $request): ?string
     {
-        $userParams = $registerRequest->only('name', 'email', 'password');
-        $device_name = $registerRequest->get('device');
+        $userParams = $request->only('name', 'email', 'password');
+        $device_name = $request->get('device');
         $user = User::create($userParams);
-
-        if (!$user) {
-            return null;
-        }
 
         return $user->createToken($device_name)->plainTextToken;
     }
