@@ -11,12 +11,7 @@ class RoleTest extends TestCase
     public function testUserIsNotSuperAdmin()
     {
         $user = User::factory()
-            ->for(
-                Role::factory()->create([
-                    'name' => 'User',
-                    'slug' => 'USER'
-                ])
-            )->create();
+            ->create();
 
         self::assertFalse($user->isSuperAdmin());
     }

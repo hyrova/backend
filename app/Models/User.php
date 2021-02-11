@@ -87,6 +87,10 @@ class User extends Authenticatable
 
     public function isSuperAdmin(): bool
     {
+        if (!$this->role) {
+            return false;
+        }
+        
         return $this->role->slug === 'SUPER_ADMIN';
     }
 }
