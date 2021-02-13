@@ -23,6 +23,7 @@ class CreateUsersTable extends Migration
             $table->boolean('newsletter')->default(0);
             $table->rememberToken();
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

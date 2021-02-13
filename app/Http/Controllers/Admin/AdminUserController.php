@@ -3,64 +3,54 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserCollection;
+use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class UserController extends Controller
+class AdminUserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    public function index()
+
+    public function index(): UserCollection
     {
-        
+        return new UserCollection(User::paginate(10));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     * @return Response
-     */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request): UserResource
     {
-        //
+        $user = User::create($request->validated());
+        $user->roles()->sync($request->get('roles'));
+        $user->save();
+        $user->refresh();
+
+        return new UserResource($user);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param User $user
-     * @return Response
-     */
-    public function show(User $user)
+    public function show(User $user): UserResource
     {
-        //
+        return new UserResource($user);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param Request $request
-     * @param User $user
-     * @return Response
-     */
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user): UserResource
     {
-        //
+        if ($roles = $request->get('roles')) {
+            $user->roles()->sync($roles);
+        }
+
+        $user->update($request->validated());
+
+        return new UserResource($user);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param User $user
-     * @return Response
-     */
-    public function destroy(User $user)
+    public function destroy(User $user): JsonResponse
     {
-        //
+        $user->delete();
+
+        return $this->success('User soft deleted successfully');
     }
 }

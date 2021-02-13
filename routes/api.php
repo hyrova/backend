@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/newsletter', [UserController::class, 'updateNewsletterSubscription']);
 });
 
-Route::get('test', function (Request $request) {
-    \App\Models\User::where('email')->get(['email']);
-    return \App\Models\User::all(['id', 'name']);
-});
+//Route::get('test', function (Request $request) {
+//    \App\Models\User::where('email')->get(['email']);
+//    return \App\Models\User::all(['id', 'name']);
+//});

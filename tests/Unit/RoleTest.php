@@ -10,7 +10,7 @@ use Tests\TestCase;
 class RoleTest extends TestCase
 {
     use RefreshDatabase;
-    
+
     public function testUserIsNotSuperAdmin(): void
     {
         $user = User::factory()
@@ -22,12 +22,7 @@ class RoleTest extends TestCase
     public function testUserIsSuperAdmin(): void
     {
         $user = User::factory()
-            ->has(
-                Role::factory()->state([
-                    'name' => 'Administrator',
-                    'slug' => 'SUPER_ADMIN'
-                ])
-            )->create();
+            ->admin()->create();
 
         self::assertTrue($user->isSuperAdmin());
     }
