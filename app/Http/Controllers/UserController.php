@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ForgotPasswordRequest;
-use App\Http\Requests\ResetPasswordRequest;
-use App\Http\Requests\UpdateNewsletterSubscriptionRequest;
-use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\UserForgotPasswordRequest;
+use App\Http\Requests\UserResetPasswordRequest;
+use App\Http\Requests\UserUpdateNewsletterSubscriptionRequest;
+use App\Http\Requests\UserUpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use Auth;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +22,7 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function updateProfile(UpdateProfileRequest $request): UserResource
+    public function updateProfile(UserUpdateProfileRequest $request): UserResource
     {
         $user = $request->user();
 
@@ -33,7 +33,7 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function updateNewsletterSubscription(UpdateNewsletterSubscriptionRequest $request): UserResource
+    public function updateNewsletterSubscription(UserUpdateNewsletterSubscriptionRequest $request): UserResource
     {
         $user = $request->user();
 
@@ -44,7 +44,7 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    public function forgotPassword(UserForgotPasswordRequest $request): JsonResponse
     {
         $status = Password::sendResetLink(
             $request->only('email')
@@ -57,7 +57,7 @@ class UserController extends Controller
         return $this->success('Reset link sent');
     }
 
-    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    public function resetPassword(UserResetPasswordRequest $request): JsonResponse
     {
         $status = Password::reset(
             $request->only('email', 'password', 'token'),

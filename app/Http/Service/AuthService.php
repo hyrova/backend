@@ -4,8 +4,8 @@
 namespace App\Http\Service;
 
 
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UserLoginRequest;
+use App\Http\Requests\UserRegisterRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +21,7 @@ class AuthService
         return Auth::attempt(['name' => $login, 'password' => $password]);
     }
 
-    public function loginSanctum(LoginRequest $request): ?string
+    public function loginSanctum(UserLoginRequest $request): ?string
     {
         $login = $request->get('login');
         $password = $request->get('password');
@@ -37,19 +37,17 @@ class AuthService
             return null;
         }
 
-        // Create new token
-        $token = $user->createToken($device);
-
         // Delete old token from same device
         $user
             ->tokens()
             ->where('name', $device)
             ->delete();
 
-        return $token->plainTextToken;
+        // Create new token
+        return $user->createToken($device)->plainTextToken;
     }
 
-    public function registerSanctum(RegisterRequest $request): ?string
+    public function registerSanctum(UserRegisterRequest $request): ?string
     {
         $userParams = $request->only('name', 'email', 'password');
         $device_name = $request->get('device');

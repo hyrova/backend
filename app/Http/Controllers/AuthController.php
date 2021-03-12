@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UserLoginRequest;
+use App\Http\Requests\UserRegisterRequest;
 use App\Http\Service\AuthService;
 use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
-    public function login(LoginRequest $request, AuthService $authService): JsonResponse
+    public function login(UserLoginRequest $request, AuthService $authService): JsonResponse
     {
         $token = $authService->loginSanctum($request);
 
@@ -20,7 +20,7 @@ class AuthController extends Controller
         return $this->failure('Wrong credentials');
     }
 
-    public function register(RegisterRequest $request, AuthService $authService): JsonResponse
+    public function register(UserRegisterRequest $request, AuthService $authService): JsonResponse
     {
         $token = $authService->registerSanctum($request);
 

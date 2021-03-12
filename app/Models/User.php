@@ -21,7 +21,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $password
  * @property bool $newsletter
  * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $/_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read int|null $notifications_count

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
@@ -21,7 +21,7 @@ class AdminUserController extends Controller
         return new UserCollection(User::paginate(10));
     }
 
-    public function store(StoreUserRequest $request): UserResource
+    public function store(UserStoreRequest $request): UserResource
     {
         $user = User::create($request->validated());
         $user->roles()->sync($request->get('roles'));
@@ -36,7 +36,7 @@ class AdminUserController extends Controller
         return new UserResource($user);
     }
 
-    public function update(UpdateUserRequest $request, User $user): UserResource
+    public function update(UserUpdateRequest $request, User $user): UserResource
     {
         if ($roles = $request->get('roles')) {
             $user->roles()->sync($roles);

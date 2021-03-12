@@ -17,5 +17,7 @@ class DatabaseSeeder extends Seeder
              'name' => 'admin',
              'password' => 'admin',
          ]);
+
+        \App\Models\User::factory(50)->create();
     }
 }
