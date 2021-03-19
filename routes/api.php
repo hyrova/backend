@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/up', function () {
+    return new \Illuminate\Http\JsonResponse('Server is up and running', 200);
+});
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/signup', [AuthController::class, 'register']);
 Route::post('/forgot-password', [UserController::class, 'forgotPassword']);
