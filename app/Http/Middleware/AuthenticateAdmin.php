@@ -15,7 +15,7 @@ class AuthenticateAdmin
      * @param Closure $next
      * @return mixed
      */
-    public function handle(Request $request, Closure $next): JsonResponse
+    public function handle(Request $request, Closure $next)
     {
         if (!$request->user()->isSuperAdmin()) {
             return new JsonResponse('Unauthorized', 401);
