@@ -31,8 +31,14 @@ class AdminUserController extends Controller
         return new UserResource($user);
     }
 
-    public function show(User $user): UserResource
+    public function show($id)
     {
+        $user = User::withTrashed()->find($id);
+
+        if (!$user) {
+            return $this->failure('User not found');
+        }
+
         return new UserResource($user);
     }
 
@@ -47,10 +53,25 @@ class AdminUserController extends Controller
         return new UserResource($user);
     }
 
-    public function destroy(User $user): JsonResponse
+    public function destroy(User $user): UserResource
     {
         $user->delete();
+        $user->refresh();
 
-        return $this->success('User soft deleted successfully');
+        return new UserResource($user);
+    }
+
+    public function restore($id)
+    {
+        $user = User::withTrashed()->find($id);
+
+        if (!$user) {
+            return $this->failure('User not found');
+        }
+
+        $user->restore();
+        $user->refresh();
+
+        return new UserResource($user);
     }
 }

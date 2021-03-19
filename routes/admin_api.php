@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 // Group with common name in the same file (better autocompletion for Laravel Idea)
 Route::name('admin.')->group(function () {
+    Route::patch('users/{id}', [AdminUserController::class, 'restore']);
     Route::apiResources([
         'users' => AdminUserController::class
     ]);

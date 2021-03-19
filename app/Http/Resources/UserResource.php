@@ -22,6 +22,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'created_at' => $this->created_at,
             'newsletter' => $this->newsletter,
+            'trashed' => $this->trashed(),
         ];
     }
 }
