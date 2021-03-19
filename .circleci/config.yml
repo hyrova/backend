@@ -18,8 +18,8 @@ jobs:
           command: |
             sudo apt update
             sudo apt-get install -y rsync libpng-dev
-            sudo docker-php-ext-install zip
-            sudo docker-php-ext-install gd
+#            sudo docker-php-ext-install zip
+#            sudo docker-php-ext-install gd
 
       - run:
           name: "Create Environment file"
@@ -65,7 +65,7 @@ jobs:
           command: |
             ssh $SSH_USER@$SSH_HOST "
             cp -rf /srv/.env.api /srv/backend/.env &&
-            cp -rf /srv/global.php.api /srv/backend/config/global.php &&
+#            cp -rf /srv/global.php.api /srv/backend/config/global.php &&
             cd /srv/backend &&
             php artisan optimize
             "
