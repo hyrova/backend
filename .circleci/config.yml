@@ -18,7 +18,7 @@ jobs:
           command: |
             sudo apt update
             sudo apt-get install -y rsync libpng-dev
-            sudo apt install php-mysql
+            sudo apt-get install php-sqlite3
       #            sudo docker-php-ext-install zip
       #            sudo docker-php-ext-install gd
 
