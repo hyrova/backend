@@ -37,7 +37,7 @@ jobs:
 
       - run:
           name: "Install Dependencies"
-          command: composer install -n --prefer-dist
+          command: composer install --no-dev -n --prefer-dist -o
 
       - save_cache:
           key: v1-dependencies-{{ checksum "composer.json" }}
@@ -67,7 +67,8 @@ jobs:
             ssh $SSH_USER@$SSH_HOST "
             cp -rf /srv/.env.api /srv/backend/.env &&
             cd /srv/backend &&
-            php artisan optimize
+            php artisan route:cache
+            php artisan config:cache
             "
 #            cp -rf /srv/global.php.api /srv/backend/config/global.php &&
 
