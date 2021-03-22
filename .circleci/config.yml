@@ -37,7 +37,7 @@ jobs:
 
       - run:
           name: "Install Dependencies"
-          command: composer install --no-dev -n --prefer-dist -o
+          command: composer install -n --prefer-dist
 
       - save_cache:
           key: v1-dependencies-{{ checksum "composer.json" }}
@@ -55,6 +55,10 @@ jobs:
       - run:
           name: "Run Unit Tests"
           command: php artisan test
+
+      - run:
+          name: "Remove dev Dependencies"
+          command: composer install --no-dev -n --prefer-dist -o
 
       - run:
           name: "Deploy Over SSH"
